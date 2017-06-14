@@ -1,0 +1,16 @@
+---
+- hosts: pi
+  name: Setup and configure UniFi Controller
+  roles:
+    - {
+        role: rpi,
+        become: true,
+        become_method: sudo,
+        when: (ansible_lsb.id == "Raspbian")
+      }
+    - {
+        role: unifi,
+        become: true,
+        become_method: sudo,
+        when: (ansible_lsb.id == "Raspbian")
+      }

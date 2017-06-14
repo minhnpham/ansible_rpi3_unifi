@@ -1,0 +1,76 @@
+---
+- name: UniFi configure apt key
+  apt_key: keyserver=keyserver.ubuntu.com id=C0A52C50
+  tags: unifi
+
+- name: UniFi configure apt repository
+  apt_repository:
+    repo: deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti
+    update_cache: yes
+  tags: unifi
+
+- name: Ensure UniFi latest version is installed
+  apt: name=unifi state=latest
+  register: unifi_installed
+  tags: unifi
+  notify: 
+    - Reboot RPi
+
+# Disable the default MongoDB database instance.
+# Without making this small configuration change, you will have two separate instances of MongoDB running; 
+# an unused default database instance, and the UniFi database instance.
+# This is a waste of resources on a Raspberry Pi.
+- name: Disable default MongoDB instance
+  when: unifi_installed|succeeded
+  lineinfile:
+    path: /etc/mongodb.conf
+    state: present
+    regexp: '^ENABLE_MONGODB=no'
+    line: 'ENABLE_MONGODB=no'
+
+
+#####
+# Update the Snappy Java Library from snappy-java-1.0.5 to snappy-java-1.1.4
+# This fixes a number of issues particularly with the older models of Raspberry Pi, but also brings 
+# the library well up-to-date as the version Ubiquiti includes with the UniFi package is from 2013.
+#####
+
+# Downloads latest snappy-java jar
+- name: Download and Install NEW snappy-java
+  when: unifi_installed|succeeded
+  get_url:
+    url: http://central.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.4/snappy-java-1.1.4.jar
+    dest: /usr/lib/unifi/lib
+  register: snappyjavanew_installed
+  tags: java
+
+# Symlink new snappy-java to make it look like the old one that UniFi uses
+- name: Symlinking new snappy-java
+  #when: (snappyjavanew_installed|succeeded) and (deleted_old_snappyjava|succeeded)
+  when: snappyjavanew_installed|succeeded
+  file:
+    force: yes
+    src: /usr/lib/unifi/lib/snappy-java-1.1.4.jar
+    dest: /usr/lib/unifi/lib/snappy-java-1.0.5.jar
+    state: link
+  register: newsnappyjavalinked
+  tags: java
+
+# Install Oracle Java 8 (Recommended)
+- name: Install Oracle Java 8 JDK
+  when: newsnappyjavalinked|succeeded
+  apt: name=oracle-java8-jdk state=present
+  register: oraclejava8_installed
+  tags: java
+
+- name: Update UniFi JAVA_HOME
+  when: (unifi_installed|succeeded) and (oraclejava8_installed|succeeded)
+  lineinfile:
+    path: /etc/default/unifi
+    state: present
+    create: yes
+    regexp: '^JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt'
+    line: 'JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt'
+  notify:
+    - Reboot RPi
+  tags: java

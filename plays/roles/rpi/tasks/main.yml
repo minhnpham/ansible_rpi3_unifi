@@ -1,0 +1,16 @@
+---
+- name: Upgrade all current packages on system
+  apt: update_cache=yes upgrade=yes
+  register: aptupgraded
+  tags: apt
+
+- name: Install Raspberry Pi firmware update app
+  apt: name=rpi-update state=latest
+  when: aptupgraded|succeeded
+  register: rpiupdate_installed
+  tags: rpi
+
+- name: Update RPi firmware
+  when: rpiupdate_installed|succeeded
+  shell: rpi-update
+  tags: rpi

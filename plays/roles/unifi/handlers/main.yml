@@ -1,0 +1,16 @@
+---
+- name: Reboot RPi
+  shell: sleep 2 && /sbin/reboot
+  async: 1
+  poll: 0
+  notify: Wait for reboot
+
+- name: Wait for reboot
+  local_action: wait_for
+  args:
+    host: "{{ inventory_hostname }}"
+    state: started
+    port: 22
+    delay: 30
+    timeout: 300
+  become: false
