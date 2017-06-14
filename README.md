@@ -14,13 +14,14 @@ An Ansible Playbook to auto provision Ubiquiti UniFi software on a Raspberry Pi 
 Update the "hosts" file with your relevant Pi hostname/IP
 
 ### 2. Install Ansible
-You will need to Ansible installed on your local machine/control node if not already installed.  
-If not follow the guides here for [Ansible installation](http://docs.ansible.com/ansible/intro_installation.html).  
+You will need Ansible installed on your local machine/control node, if not already installed, follow the guides here for [Ansible installation](http://docs.ansible.com/ansible/intro_installation.html).  
 
 ### 3. Setup SSH Keys for the Raspberry Pi
 
-Create the .ssh directory on the RPi.   
-`$ ssh pi@`**`pi_host`** `'mkdir -p ~/.ssh'`  
+Create the .ssh directory on the RPi.  
+<code>
+$ ssh pi@<b>pi_host</b> 'mkdir -p ~/.ssh'
+</code>
 
 From the control/local host generate the ssh-keys required to control the RPi.  
 `$ ssh-keygen -t rsa -C "Raspberry Pi" -f id_rsa_rpi -q -N ""`  
