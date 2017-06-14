@@ -33,7 +33,7 @@ Then provision the ssh-key to the RPi.
 $ cat ~/.ssh/id_rsa_rpi.pub | ssh pi@<b>pi_host</b> 'cat >> ~/.ssh/authorized_keys'
 </code></pre>
 
-**NOTE:** Remember to replace **pi_host** with the RPi hostname/IP  
+**NOTE:** Remember to replace <mark>pi_host</mark> with the RPi hostname/IP  
 
 # Usage
 <pre><code>
